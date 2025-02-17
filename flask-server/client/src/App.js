@@ -3,21 +3,31 @@ import React, { useState } from 'react';
 function App() {
   const [message, setMessage] = useState('');
 
-  const addCookie = async () => {
-    console.log("addCookie function triggered");
+  // Function to handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // Prevent page reload
 
-    const newCookie = { level: 1, exp: 100 };
+    // Create a FormData object and append input values
+    const formData = new FormData(event.target);
+    // Convert FormData to a JSON object
+    const jsonData = Object.fromEntries(formData.entries());
 
+    console.log("Submitting data:", jsonData);
+
+    const level = Number(jsonData.level);
+    // level range
+    if (level < 0 || level > 90) {
+      setMessage("Error: Level must be between 1 to 90")
+      return
+    }
     try {
-      console.log("Sending POST request to /api/cookies...");
       const response = await fetch("http://127.0.0.1:5000/api/cookies", {
         method: "POST",
+        body: JSON.stringify(jsonData), // Send JSON data
         headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newCookie),
+          "Content-Type": "application/json"
+        }
       });
-      console.log("Response received:", response);
 
       if (!response.ok) {
         throw new Error(`Failed to add cookie: ${response.statusText}`);
@@ -34,7 +44,17 @@ function App() {
   return (
     <div>
       <h1>Cookie App</h1>
-      <button onClick={addCookie}>Add Cookie</button>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Level:
+          <input type="number" name="level" min = "1" max = "89" required />
+        </label>
+        <label>
+          Experience:
+          <input type="number" name="exp" required />
+        </label>
+        <button type="submit">Add Cookie</button>
+      </form>
       {message && <p>{message}</p>}
     </div>
   );
